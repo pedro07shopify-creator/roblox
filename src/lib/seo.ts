@@ -63,7 +63,13 @@ export function buildMetadata({
   type = 'website',
 }: BuildMetadataInput): Metadata {
   const url = absoluteUrl(path)
-  const ogImage = absoluteUrl(image || DEFAULT_OG_IMAGE)
+  // SVG nao serve como og:image: Facebook, WhatsApp, X e LinkedIn simplesmente
+  // nao renderizam — o link sai sem imagem. Quando o valor configurado for SVG
+  // (o placeholder da loja e um), cai na rota /opengraph-image, que gera PNG.
+  const imagemEscolhida = image || DEFAULT_OG_IMAGE
+  const ogImage = /\.svg$/i.test(imagemEscolhida)
+    ? absoluteUrl('/opengraph-image')
+    : absoluteUrl(imagemEscolhida)
   const desc = stripHtml(description, 200)
 
   return {
