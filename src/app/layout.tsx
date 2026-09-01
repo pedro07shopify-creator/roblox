@@ -8,6 +8,8 @@ import { getStoreSettings } from '@/lib/queries/settings'
 import { buildMetadata } from '@/lib/seo'
 
 import './globals.css'
+import { missingPublicEnv } from '@/lib/env'
+import { SetupRequired } from '@/components/setup-required'
 
 const geistSans = Geist({
   variable: '--font-geist-sans',
@@ -92,6 +94,12 @@ function primaryChannels(value: string | null | undefined): string | null {
 }
 
 export async function generateMetadata(): Promise<Metadata> {
+  // Sem as variaveis nao ha banco para consultar; devolver algo estatico
+  // evita que o proprio metadata derrube a pagina de diagnostico.
+  if (missingPublicEnv().length > 0) {
+    return { title: 'Configuracao pendente', robots: { index: false, follow: false } }
+  }
+
   const settings = await getStoreSettings()
 
   const title = settings.seo_title || settings.store_name
@@ -117,6 +125,11 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default async function RootLayout({ children }: { children: ReactNode }) {
+  // Curto-circuito ANTES de tocar no Supabase: sem as variaveis o client
+  // lanca ao ser criado, e o 500 resultante nao explica nada a quem publicou.
+  const faltando = missingPublicEnv()
+  if (faltando.length > 0) return <SetupRequired missing={faltando} />
+
   const settings = await getStoreSettings()
   const channels = primaryChannels(settings.primary_color)
 
