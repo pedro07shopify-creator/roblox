@@ -59,15 +59,28 @@ export async function GET() {
 
   const saudavel = faltando.length === 0 && banco.ok
 
+  // Nomes de variáveis que PARECEM ser deste projeto, para pegar erro de
+  // digitação: um espaço no fim ou "SERVICE_ROLE" sem o "_KEY" cria uma
+  // variável diferente, que some sem avisar. Só os NOMES saem daqui —
+  // e apenas os que casam com os prefixos do projeto, para não listar o
+  // ambiente inteiro da plataforma.
+  const detectadas = Object.keys(process.env)
+    .filter((k) => /SUPABASE|STRIPE|NEXT_PUBLIC/i.test(k))
+    .map((k) => (k === k.trim() ? k : `${k}  <-- TEM ESPACO NO NOME`))
+    .sort()
+
   return NextResponse.json(
     {
       ok: saudavel,
       env,
       variaveis_publicas_faltando: faltando,
+      nomes_detectados: detectadas,
       banco,
       node: process.version,
       regiao: process.env.VERCEL_REGION ?? 'local',
       commit: process.env.VERCEL_GIT_COMMIT_SHA?.slice(0, 7) ?? 'local',
+      // Muda a cada deploy: prova se o redeploy realmente entrou no ar.
+      deploy: process.env.VERCEL_DEPLOYMENT_ID?.slice(-8) ?? 'local',
     },
     { status: saudavel ? 200 : 503 }
   )
