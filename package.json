@@ -12,7 +12,8 @@
     "db:dump": "node scripts/dump-migrations.mjs",
     "verify": "npm run typecheck && npm run lint && npm run build",
     "test:webhook": "node scripts/test-stripe-webhook.mjs",
-    "test:sanitize": "node scripts/test-sanitize.mjs"
+    "test:sanitize": "node scripts/test-sanitize.mjs",
+    "test:admins": "node scripts/test-admins.mjs"
   },
   "dependencies": {
     "@dnd-kit/core": "^6.3.1",

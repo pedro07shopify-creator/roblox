@@ -22,6 +22,8 @@ export interface StoreSettings {
   show_social_proof: boolean
   show_reviews_home: boolean
   payment_pix_enabled: boolean
+  auth_google_enabled: boolean
+  auth_discord_enabled: boolean
 }
 
 const FALLBACK: StoreSettings = {
@@ -44,6 +46,10 @@ const FALLBACK: StoreSettings = {
   show_social_proof: true,
   show_reviews_home: true,
   payment_pix_enabled: true,
+  // Nascem desligados: o botao so aparece depois que o provedor for
+  // configurado no Supabase, senao o clique leva a um 400.
+  auth_google_enabled: false,
+  auth_discord_enabled: false,
 }
 
 /**
