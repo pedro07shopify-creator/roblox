@@ -20,7 +20,8 @@ praticamente tudo pelo painel, sem abrir o editor de código.
 10. [Deploy na Vercel](#deploy-na-vercel)
 11. [Checklist de produção](#checklist-de-produção)
 12. [Pagamento (Stripe / Pix)](#pagamento-stripe--pix)
-13. [Melhorias futuras](#melhorias-futuras)
+13. [Diagnóstico de implantação](#diagnóstico-de-implantação)
+14. [Melhorias futuras](#melhorias-futuras)
 
 ---
 
@@ -103,6 +104,7 @@ A loja sobe em `http://localhost:3000` e o painel em `http://localhost:3000/admi
 | `npm run typecheck` | TypeScript sem emitir arquivos |
 | `npm run lint` | ESLint |
 | `npm run test:security` | **Smoke test de RLS** — conecta como visitante anônimo e tenta alcançar o que não deveria |
+| `npm run test:sanitize` | **Teste de XSS** — 26 cenários provando que a sanitização barra script, onerror, javascript: e afins |
 | `npm run test:webhook` | **Teste do webhook da Stripe** — assina eventos com o SDK e prova que o endpoint aceita os válidos e recusa forjados, adulterados e replays |
 | `npm run verify` | typecheck + lint + build, em sequência |
 | `npm run db:dump` | Materializa as migrations aplicadas a partir do banco |
@@ -513,6 +515,46 @@ matcher): ele autentica por assinatura, não por cookie.
 
 **Pix é assíncrono.** O pedido nasce `pending` e só muda quando o webhook chega.
 Por isso o webhook não é opcional: sem ele configurado, nenhum pedido é entregue.
+
+---
+
+## Diagnóstico de implantação
+
+`GET /api/health` responde com a presença de cada variável de ambiente (nunca o
+valor) e testa a conexão com o banco:
+
+```bash
+curl https://SEU-DOMINIO/api/health
+```
+
+É um Route Handler de propósito: **não passa pelo layout raiz**, então continua
+respondendo quando todas as páginas estão em 500 — que é justamente quando se
+precisa dele.
+
+### A armadilha que já custou caro aqui
+
+No primeiro deploy, **toda página dava 500** enquanto `robots.txt` e as rotas de
+API respondiam 200. Esse contraste é o que aponta o caminho: se as rotas que não
+passam pelo layout funcionam e as que passam não, o problema está no layout —
+não no banco, não nas variáveis.
+
+A causa era `isomorphic-dompurify`, que carrega **jsdom** no servidor. O jsdom
+quebra no runtime serverless da Vercel com `ERR_REQUIRE_ESM`. Como a sanitização
+entra na cadeia `layout → metadata → seo.ts → sanitize.ts`, derrubava tudo.
+
+Não aparecia em `npm run dev`, nem no `build`, nem no `npm start` local — fora do
+bundle o Node resolve os módulos de outro jeito.
+
+**Regra que ficou:** desconfie de qualquer dependência que arraste `jsdom`,
+`canvas` ou binário nativo. Confira antes de publicar:
+
+```bash
+npm ls jsdom
+```
+
+Para achar a linha exata de um 500 opaco em produção, crie um Route Handler
+temporário que rode cada passo do layout em `try/catch` separado e devolva qual
+falhou. Foi o que identificou esta causa em uma única chamada.
 
 ---
 
