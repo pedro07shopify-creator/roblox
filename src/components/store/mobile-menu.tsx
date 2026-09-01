@@ -4,17 +4,11 @@ import * as React from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
 import {
-  Camera,
   ChevronRight,
   House,
   Menu,
-  MessageCircle,
-  MessagesSquare,
-  Music2,
-  Play,
   Store,
 } from 'lucide-react'
-import type { LucideIcon } from 'lucide-react'
 
 import { Button } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'
@@ -26,21 +20,13 @@ import {
   SheetTrigger,
 } from '@/components/ui/sheet'
 import { cn } from '@/lib/utils'
+import { SOCIAL_META, type SocialKind } from '@/components/store/brand-icons'
 
-export type SocialKind = 'whatsapp' | 'instagram' | 'discord' | 'youtube' | 'tiktok'
 
 /**
  * O lucide removeu os ícones de marca, então cada rede usa o ícone genérico
  * mais próximo do que ela é. O nome acessível vem do aria-label, não do ícone.
  */
-const SOCIAL_META: Record<SocialKind, { label: string; Icon: LucideIcon }> = {
-  whatsapp: { label: 'WhatsApp', Icon: MessageCircle },
-  instagram: { label: 'Instagram', Icon: Camera },
-  discord: { label: 'Discord', Icon: MessagesSquare },
-  youtube: { label: 'YouTube', Icon: Play },
-  tiktok: { label: 'TikTok', Icon: Music2 },
-}
-
 export interface MobileMenuLink {
   label: string
   href: string

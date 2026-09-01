@@ -2,16 +2,10 @@ import { cache } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
 import {
-  Camera,
   Mail,
-  MessageCircle,
-  MessagesSquare,
-  Music2,
-  Play,
   ShieldCheck,
   Store,
 } from 'lucide-react'
-import type { LucideIcon } from 'lucide-react'
 
 import { createClient } from '@/lib/supabase/server'
 import { getFeaturedCategories } from '@/lib/queries/catalog'
@@ -19,7 +13,7 @@ import { getStoreSettings, type StoreSettings } from '@/lib/queries/settings'
 import { cn } from '@/lib/utils'
 import type { Page } from '@/lib/types/database.types'
 
-import type { SocialKind } from './mobile-menu'
+import { SOCIAL_META, type SocialKind } from '@/components/store/brand-icons'
 
 export type FooterPage = Pick<Page, 'id' | 'title' | 'slug'>
 
@@ -53,14 +47,6 @@ export function socialLinks(settings: StoreSettings): { kind: SocialKind; url: s
       { kind: 'tiktok' as const, url: settings.tiktok_url },
     ] satisfies { kind: SocialKind; url: string }[]
   ).filter((social) => social.url.trim().length > 0)
-}
-
-const SOCIAL_META: Record<SocialKind, { label: string; Icon: LucideIcon }> = {
-  whatsapp: { label: 'WhatsApp', Icon: MessageCircle },
-  instagram: { label: 'Instagram', Icon: Camera },
-  discord: { label: 'Discord', Icon: MessagesSquare },
-  youtube: { label: 'YouTube', Icon: Play },
-  tiktok: { label: 'TikTok', Icon: Music2 },
 }
 
 export async function Footer({ className }: { className?: string }) {
